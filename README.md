@@ -160,7 +160,7 @@ Set `fail-on: never` — scores and reports are still produced, the workflow sta
 | ----------------------------- | ------------------------------------------------------------------------------------------------------- |
 | 🐛 Bug in this action         | [Open an issue](https://github.com/KleeBlattSpace/tilesmith-actions/issues/new?template=bug_report.yml) |
 | ❓ Questions & usage help     | [GitHub Discussions](https://github.com/KleeBlattSpace/tilesmith-actions/discussions)                   |
-| 🔑 API key, quota, or billing | [support@kleeblatt.space](mailto:support@kleeblatt.space) · [dashboard](https://app.kleeblatt.space)    |
+| 🔑 API key, quota, or billing | [admin@kleeblatt.space](mailto:admin@kleeblatt.space) · [dashboard](https://app.kleeblatt.space)        |
 | 🔒 Security                   | Follow [SECURITY.md](SECURITY.md)                                                                       |
 
 We aim to respond within a few business days. See [SUPPORT.md](SUPPORT.md) for details.
