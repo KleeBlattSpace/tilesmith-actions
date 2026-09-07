@@ -13,6 +13,7 @@ Last updated: 2026-09-07 (v1.1.0).
 - **CI**: `selftest.yml` (test/build/lint/format + dogfooding the action on CC0 fixtures, keyless or keyed via `TILESMITH_STAGING_KEY`), `dist.yml` (auto-rebuild + push of committed `dist/`, fork-safe), `release.yml` (tag `v*` ⇒ sync check ⇒ attestation ⇒ GitHub release ⇒ move major tag).
 - **Docs**: README with banner, badges, real overlay examples, quickstart incl. artifact upload, inputs/outputs, example PR comment, honest privacy section, support section, collapsible FAQ; SUPPORT.md, CONTRIBUTING.md, CODE_OF_CONDUCT.md, SECURITY.md (with contact email), CHANGELOG, MIT license, CC0 fixture provenance; issue templates (bug/feature forms + contact links) and PR template.
 - **User docs**: `docs/usage-guide.md` (step-by-step setup, `paths` semantics with examples, workflow recipes, report.json reference, troubleshooting, FAQ) and `docs/how-scoring-works.md` (conceptual explanation of seams/borders/artifacts, gates, privacy pipeline — with an explicit open-client / server-side-IP split; no scoring logic in this repo).
+- **Live benchmark viewer** (`benchmark-viewer/`, deployed to GitHub Pages by `pages.yml`): real scores on the 120 CC0 synthetic defect tiles from `gc-pipeline-benchmark` — live-fetches the benchmark repo's `results.json`/`ground-truth.json` with a bundled offline snapshot as fallback. Demonstrates exactly what QC detects without exposing any scoring internals.
 - **Marketplace-ready branding**: `action.yml` name/description/icon (`grid`, green) tuned for the GitHub Marketplace listing; marketplace badge/link in README.
 
 ## 🔜 Before announcing (blocking)
@@ -27,6 +28,7 @@ Last updated: 2026-09-07 (v1.1.0).
    - **Topics**: `github-actions`, `gamedev`, `game-development`, `pixel-art`, `tilemap`, `continuous-integration`, `code-quality`, `game-assets` (the `github-actions` topic triggers Marketplace listing).
    - **Enable Discussions** (Settings → General → Features) — SUPPORT.md and issue templates already link to them.
    - **Upload a social preview image** (Settings → General → Social preview): use `docs/images/banner.png`.
+   - **Enable GitHub Pages** (Settings → Pages → Source: **GitHub Actions**), then run the "Pages — Benchmark viewer" workflow once (`workflow_dispatch`). The viewer goes live at `https://kleeblattspace.github.io/tilesmith-actions/`.
    - Check the **Community Standards** tab — should be 100% after this PR.
 
 ## 💡 Later (phase 2 ideas)

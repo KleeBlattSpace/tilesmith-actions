@@ -1,0 +1,5 @@
+{
+  "source": "https://github.com/KleeBlattSpace/gc-pipeline-benchmark/blob/main/public/benchmark/",
+  "fetched_at": "2026-09-07",
+  "note": "Offline fallback snapshot; the viewer live-fetches the benchmark repo when reachable."
+}

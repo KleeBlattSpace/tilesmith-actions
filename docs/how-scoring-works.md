@@ -2,6 +2,8 @@
 
 A transparent, plain-language explanation of what the TileSmith QC score means — and what deliberately stays on our servers.
 
+> 🔬 **Prefer seeing over reading?** The [benchmark viewer](https://kleeblattspace.github.io/tilesmith-actions/) shows the scoring live: 120 synthetic tiles across six defect categories (seams, borders, blur, pattern repetition, watermarks) with the gates they received, based on our public [benchmark dataset](https://github.com/KleeBlattSpace/gc-pipeline-benchmark).
+
 **Contents:** [The idea](#the-idea) · [What we check](#what-we-check) · [Scores and gates](#scores-and-gates) · [Size classes](#size-classes) · [What happens to your images](#what-happens-to-your-images) · [What's in this repo vs. what isn't](#whats-in-this-repo-vs-what-isnt) · [Limitations](#limitations)
 
 ---

@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TileSmith QC — Live Benchmark</title>
+    <meta
+      name="description"
+      content="See TileSmith QC scoring in action: 120 synthetic game tiles with six defect categories (seams, borders, blur, pattern, watermark) scored live against the public benchmark."
+    />
+    <meta property="og:title" content="TileSmith QC — Live Benchmark" />
+    <meta
+      property="og:description"
+      content="Real scores on defective game tiles — what the free TileSmith QC GitHub Action detects."
+    />
+    <meta
+      property="og:image"
+      content="https://raw.githubusercontent.com/KleeBlattSpace/tilesmith-actions/main/docs/images/banner.png"
+    />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍀</text></svg>"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>🍀 TileSmith QC — Live Benchmark</h1>
+      <p class="sub">
+        Real scores on synthetic defect tiles — this is what the free
+        <a href="https://github.com/KleeBlattSpace/tilesmith-actions">TileSmith QC GitHub Action</a> detects on every
+        pull request.
+      </p>
+      <p class="sub">
+        <span id="source-badge" class="badge" title="Where the displayed data comes from">loading data…</span>
+        <span id="generated-at" class="dim"></span>
+      </p>
+    </header>
+
+    <main>
+      <section id="summary" class="summary" aria-label="Summary"></section>
+      <section id="controls" class="controls" aria-label="Filters"></section>
+      <section id="grid" class="grid" aria-label="Tiles"></section>
+      <p id="empty" class="empty" hidden>No tiles match the current filters.</p>
+    </main>
+
+    <footer>
+      <p>
+        Dataset:
+        <a id="source-link" href="https://github.com/KleeBlattSpace/gc-pipeline-benchmark">gc-pipeline-benchmark</a>
+        (CC0 synthetic fixtures) · Scoring API by
+        <a href="https://app.kleeblatt.space">TileSmith Studio</a>
+      </p>
+      <p class="dim">Shows results only — scoring models and thresholds are not part of the public dataset. 🍀</p>
+    </footer>
+
+    <script src="app.js"></script>
+  </body>
+</html>
