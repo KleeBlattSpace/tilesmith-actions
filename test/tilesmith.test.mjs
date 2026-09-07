@@ -11,6 +11,10 @@ test('overlay upscales small source and draws a production frame', () => {
   const output = PNG.sync.read(renderOverlay(png(16, 16), { gate: 'Production', overall: 97 }));
   assert.ok(output.width >= 128 && output.height >= 128);
   assert.deepEqual([...output.data.slice(0, 3)], [46, 160, 67]);
+  const x = output.width - 12;
+  const y = output.height - 8;
+  const i = (output.width * y + x) * 4;
+  assert.deepEqual([...output.data.slice(i, i + 3)], [18, 20, 24], 'bottom bar teaser strip');
 });
 
 test('aggregate counts gates and computes average', () => {
