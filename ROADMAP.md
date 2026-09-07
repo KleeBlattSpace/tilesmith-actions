@@ -23,7 +23,7 @@ Last updated: 2026-09-07 (v1.1.0).
 4. **Verify the API contract live**: `POST /v1/score` and `POST /v1/reports` (the reports endpoint feeds the planned badge; upload failures must stay warning-only).
 5. **Dogfood externally**: run the action in the `gc-pipeline-benchmark` repo; capture a real PR-comment screenshot for the README.
 6. **Repo admin one-clickers** (need owner permissions, not doable from CI):
-   - Repo **Description** + **Website**: `TileSmith QC — free GitHub Action for game tile quality control` / `https://app.kleeblatt.space` (Settings → General).
+   - Repo **Description** + **Website**: `TileSmith QC — free GitHub Action for game tile quality control` / `https://tilesmith.kleeblatt.space` (Settings → General).
    - **Topics**: `github-actions`, `gamedev`, `game-development`, `pixel-art`, `tilemap`, `continuous-integration`, `code-quality`, `game-assets` (the `github-actions` topic triggers Marketplace listing).
    - **Enable Discussions** (Settings → General → Features) — SUPPORT.md and issue templates already link to them.
    - **Upload a social preview image** (Settings → General → Social preview): use `docs/images/banner.png`.

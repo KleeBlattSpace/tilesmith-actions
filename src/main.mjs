@@ -1,7 +1,7 @@
 import { readFile, writeFile, mkdir, readdir } from 'node:fs/promises';
 import { join, relative, extname } from 'node:path';
 import { renderOverlay } from './overlay.mjs';
-import { aggregate, markdownReport, upsertComment, writeSummary } from './report.mjs';
+import { aggregate, markdownReport, upsertComment, writeSummary, logOverview } from './report.mjs';
 
 const API_URL = process.env.TILESMITH_API_URL || 'https://api.kleeblatt.space/v1/score';
 const REPORTS_URL = process.env.TILESMITH_REPORTS_URL || API_URL.replace(/\/score\/?$/, '/reports');
@@ -130,7 +130,7 @@ async function requestScore(buffer, apiKey, fetchImpl = fetch) {
       if ([401, 403].includes(response.status))
         throw Object.assign(new Error('Authentication failed. Check your API key and dashboard.'), { code: 2 });
       if (response.status === 402)
-        throw Object.assign(new Error('TileSmith quota exhausted. Upgrade at https://app.kleeblatt.space.'), {
+        throw Object.assign(new Error('TileSmith quota exhausted. Sign in at https://tilesmith.kleeblatt.space.'), {
           code: 2,
         });
       if (response.status === 429) {
@@ -212,7 +212,7 @@ async function main() {
   const { failOn, maxFiles } = validate();
   const apiKey = input('api-key');
   if (!apiKey) {
-    command('notice', 'No API key – skipping QC. Free key: https://app.kleeblatt.space');
+    command('notice', 'No API key – skipping QC. Sign in → Account & API Keys: https://tilesmith.kleeblatt.space');
     return;
   }
   const patterns = input('paths', 'assets/**')
@@ -245,7 +245,8 @@ async function main() {
   };
   await mkdir(join(root, 'tilesmith-report'), { recursive: true });
   await writeFile(join(root, 'tilesmith-report', 'report.json'), JSON.stringify(metadata, null, 2) + '\n');
-  await writeSummary(process.env.GITHUB_STEP_SUMMARY, stats, tiles);
+  logOverview(stats, { skipped });
+  await writeSummary(process.env.GITHUB_STEP_SUMMARY, stats, tiles, { skipped });
   const issue = process.env.GITHUB_EVENT_PATH ? JSON.parse(await readFile(process.env.GITHUB_EVENT_PATH, 'utf8')) : {};
   const issueNumber = issue.pull_request?.number;
   if (process.env.GITHUB_TOKEN && issueNumber) {
@@ -254,7 +255,7 @@ async function main() {
         token: process.env.GITHUB_TOKEN,
         repo: process.env.GITHUB_REPOSITORY,
         issueNumber,
-        body: markdownReport(stats, tiles),
+        body: markdownReport(stats, tiles, { skipped }),
       });
     } catch (error) {
       command('warning', `PR comment failed: ${error.message}`);

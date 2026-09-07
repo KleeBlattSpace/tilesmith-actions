@@ -2143,17 +2143,30 @@ var FONT = {
   9: ["111", "101", "111", "001", "110"],
   A: ["010", "101", "111", "101", "101"],
   C: ["111", "100", "100", "100", "111"],
+  D: ["110", "101", "101", "101", "110"],
   E: ["111", "100", "110", "100", "111"],
+  F: ["111", "100", "110", "100", "100"],
   I: ["111", "010", "010", "010", "111"],
+  L: ["100", "100", "100", "100", "111"],
+  M: ["101", "111", "111", "101", "101"],
   N: ["101", "111", "111", "101", "101"],
   O: ["111", "101", "101", "101", "111"],
   P: ["110", "101", "110", "100", "100"],
+  Q: ["111", "101", "101", "111", "011"],
   R: ["110", "101", "110", "101", "101"],
+  S: ["011", "100", "010", "001", "110"],
+  T: ["111", "010", "010", "010", "010"],
+  U: ["101", "101", "101", "101", "111"],
   V: ["101", "101", "101", "101", "010"],
   W: ["101", "101", "111", "111", "010"],
+  X: ["101", "101", "010", "101", "101"],
   " ": ["000", "000", "000", "000", "000"],
-  ":": ["000", "010", "000", "010", "000"]
+  ":": ["000", "010", "000", "010", "000"],
+  "/": ["001", "001", "010", "100", "100"]
 };
+var WHITE = { r: 255, g: 255, b: 255 };
+var BAR = { r: 18, g: 20, b: 24 };
+var PIP_DIM = { r: 90, g: 96, b: 104 };
 var pixel = (png, x, y, color) => {
   if (x < 0 || y < 0 || x >= png.width || y >= png.height) return;
   const i = (png.width * y + x) * 4;
@@ -2162,6 +2175,9 @@ var pixel = (png, x, y, color) => {
   png.data[i + 2] = color.b;
   png.data[i + 3] = 255;
 };
+function fillRect(png, x, y, w, h, color) {
+  for (let yy = y; yy < y + h; yy++) for (let xx = x; xx < x + w; xx++) pixel(png, xx, yy, color);
+}
 function drawText(png, text, x, y, scale, color) {
   let cursor = x;
   for (const char of text.toUpperCase()) {
@@ -2173,6 +2189,17 @@ function drawText(png, text, x, y, scale, color) {
             for (let dx = 0; dx < scale; dx++) pixel(png, cursor + col * scale + dx, y + row * scale + dy, color);
       }
     cursor += 4 * scale;
+  }
+  return cursor;
+}
+function drawPips(png, x, y, size, gap, fill, dim) {
+  for (let i = 0; i < 4; i++) {
+    const px = x + i * (size + gap);
+    if (i === 0) fillRect(png, px, y, size, size, fill);
+    else {
+      fillRect(png, px, y, size, size, dim);
+      fillRect(png, px + 1, y + 1, Math.max(1, size - 2), Math.max(1, size - 2), BAR);
+    }
   }
 }
 function upscale(source) {
@@ -2196,6 +2223,10 @@ function renderOverlay(input2, score = {}) {
   const gate = score.gate ?? "Review";
   const frame = COLORS[gate] ?? COLORS.Review;
   const thickness = Math.max(2, Math.round(Math.min(png.width, png.height) / 64));
+  const scale = Math.max(1, Math.floor(Math.min(png.width, png.height) / 160));
+  const barH = 5 * scale + thickness * 3;
+  const barY = png.height - thickness - barH;
+  fillRect(png, thickness, barY, png.width - thickness * 2, barH, BAR);
   for (let t = 0; t < thickness; t++)
     for (let x = 0; x < png.width; x++) {
       pixel(png, x, t, frame);
@@ -2206,15 +2237,21 @@ function renderOverlay(input2, score = {}) {
       pixel(png, t, y, frame);
       pixel(png, png.width - 1 - t, y, frame);
     }
-  const label = `${gate} ${Number.isFinite(score.overall) ? Math.round(score.overall) : "?"}`;
-  const scale = Math.max(1, Math.floor(Math.min(png.width, png.height) / 160));
-  drawText(png, label, thickness * 2, thickness * 2, scale, { r: 255, g: 255, b: 255 });
+  const short = { Production: "PROD", Review: "REVIEW", Reject: "REJECT" };
+  const label = `${short[gate] ?? String(gate).slice(0, 6)} ${Number.isFinite(score.overall) ? Math.round(score.overall) : "?"}`;
+  drawText(png, label, thickness * 2, thickness * 2, scale, WHITE);
+  const textY = barY + Math.max(1, Math.floor((barH - 5 * scale) / 2));
+  const after = drawText(png, "QC 1/4", thickness * 2, textY, scale, WHITE);
+  const pip = Math.max(3, scale * 3);
+  drawPips(png, after + scale, textY + Math.floor((5 * scale - pip) / 2), pip, Math.max(2, scale), frame, PIP_DIM);
   return import_pngjs.PNG.sync.write(png);
 }
 
 // src/report.mjs
 var MARKER = "<!-- tilesmith-qc -->";
-var DISCLAIMER = "\u{1F340} This service is free. To keep it free, we collect anonymous scoring logs (scores, gate, size class, timestamp). Images and personal data are never stored.";
+var DASHBOARD_URL = "https://tilesmith.kleeblatt.space";
+var FAIR_USE_URL = "https://github.com/KleeBlattSpace/tilesmith-actions/blob/main/docs/fair-use.md";
+var DISCLAIMER = `\u{1F340} This service is free under [fair use](${FAIR_USE_URL}) (hobby CI; no published monthly cap yet). To keep it free, we collect anonymous scoring logs (scores, gate, size class, timestamp). Images and personal data are never stored.`;
 function aggregate(tiles) {
   const stats = { total: tiles.length, production: 0, review: 0, reject: 0, avg: 0 };
   for (const tile of tiles) {
@@ -2228,31 +2265,65 @@ function aggregate(tiles) {
   return stats;
 }
 var MAX_ROWS = 30;
-function markdownReport(stats, tiles) {
+function markdownReport(stats, tiles, { skipped = 0 } = {}) {
   const shown = tiles.slice(0, MAX_ROWS);
   const rows = shown.map((t) => `| ${t.file} | ${t.overall ?? "\u2014"} | ${t.gate ?? "Review"} | ${t.size_class ?? "\u2014"} |`).join("\n");
   const more = tiles.length > MAX_ROWS ? `
 
 \u2026and ${tiles.length - MAX_ROWS} more \u2014 see the \`tilesmith-report\` artifact for the full list.
 ` : "";
+  const skippedLine = skipped > 0 ? `
+_${skipped} tile${skipped === 1 ? "" : "s"} could not be scored (network/API)._
+` : "";
+  const needsWork = stats.review + stats.reject > 0;
+  const nextStep = needsWork ? `
+Tiles on Review/Reject: open [TileFix Doctor](${DASHBOARD_URL}) in TileSmith Studio (browser, local-first) to clean seams before the next push.
+` : "";
+  const studio = `<details>
+<summary>About this check</summary>
+
+TileSmith QC is the free CI slice of [TileSmith Studio](${DASHBOARD_URL}): **TileFix Doctor** \u2192 **TileSet Creator** \u2192 **Terrain Studio** \u2192 **TileMap Creator**. Scoring stays in this action; fixing and assembling tiles happens in the studio.
+
+</details>`;
   return `${MARKER}
 ## TileSmith QC
 
-**${stats.total}** tiles scored \xB7 Average **${stats.avg}**
+| \u2705 Production | \u26A0\uFE0F Review | \u274C Reject | Average |
+| :---: | :---: | :---: | :---: |
+| **${stats.production}** | **${stats.review}** | **${stats.reject}** | **${stats.avg}** |
+
+**${stats.total}** tiles scored${skippedLine}${nextStep}
+[Account & API Keys](${DASHBOARD_URL}) \xB7 [Marketplace](https://github.com/marketplace/actions/tilesmith-qc)
+
+<details>
+<summary>Per-tile scores</summary>
 
 | File | Score | Gate | Size class |
 |---|---:|---|---|
 ${rows || "| No matching tiles | \u2014 | \u2014 | \u2014 |"}
 ${more}
+</details>
+
+${studio}
+
 ${DISCLAIMER}
 
-[Get your free API key](https://app.kleeblatt.space)${stats.review + stats.reject > 0 ? " \xB7 Review or Reject results may require an upgrade." : ""}`;
+[Fair use](${FAIR_USE_URL})`;
 }
-async function writeSummary(summaryPath, stats, tiles) {
+async function writeSummary(summaryPath, stats, tiles, extras = {}) {
   if (!summaryPath) return;
   const { appendFile } = await import("node:fs/promises");
-  await appendFile(summaryPath, `${markdownReport(stats, tiles)}
+  await appendFile(summaryPath, `${markdownReport(stats, tiles, extras)}
 `);
+}
+function logOverview(stats, { skipped = 0 } = {}) {
+  console.log("::group::TileSmith QC overview");
+  console.log(
+    `Production ${stats.production} \xB7 Review ${stats.review} \xB7 Reject ${stats.reject} \xB7 skipped ${skipped} \xB7 avg ${stats.avg}`
+  );
+  console.log(`Account & API Keys (sign in): ${DASHBOARD_URL}`);
+  console.log("::endgroup::");
+  console.log(`::notice::TileSmith QC \u2014 ${stats.total} tiles, avg ${stats.avg}. Keys/usage/billing: ${DASHBOARD_URL}`);
 }
 async function upsertComment({ token, repo, issueNumber, body, fetchImpl = fetch }) {
   if (!token || !repo || !issueNumber) return false;
@@ -2364,7 +2435,7 @@ async function requestScore(buffer, apiKey, fetchImpl = fetch) {
       if ([401, 403].includes(response.status))
         throw Object.assign(new Error("Authentication failed. Check your API key and dashboard."), { code: 2 });
       if (response.status === 402)
-        throw Object.assign(new Error("TileSmith quota exhausted. Upgrade at https://app.kleeblatt.space."), {
+        throw Object.assign(new Error("TileSmith quota exhausted. Sign in at https://tilesmith.kleeblatt.space."), {
           code: 2
         });
       if (response.status === 429) {
@@ -2439,7 +2510,7 @@ async function main() {
   const { failOn, maxFiles } = validate();
   const apiKey = input("api-key");
   if (!apiKey) {
-    command("notice", "No API key \u2013 skipping QC. Free key: https://app.kleeblatt.space");
+    command("notice", "No API key \u2013 skipping QC. Sign in \u2192 Account & API Keys: https://tilesmith.kleeblatt.space");
     return;
   }
   const patterns = input("paths", "assets/**").split(",").map((p) => p.trim()).filter(Boolean);
@@ -2469,7 +2540,8 @@ async function main() {
   };
   await mkdir(join(root, "tilesmith-report"), { recursive: true });
   await writeFile(join(root, "tilesmith-report", "report.json"), JSON.stringify(metadata, null, 2) + "\n");
-  await writeSummary(process.env.GITHUB_STEP_SUMMARY, stats, tiles);
+  logOverview(stats, { skipped });
+  await writeSummary(process.env.GITHUB_STEP_SUMMARY, stats, tiles, { skipped });
   const issue = process.env.GITHUB_EVENT_PATH ? JSON.parse(await readFile(process.env.GITHUB_EVENT_PATH, "utf8")) : {};
   const issueNumber = issue.pull_request?.number;
   if (process.env.GITHUB_TOKEN && issueNumber) {
@@ -2478,7 +2550,7 @@ async function main() {
         token: process.env.GITHUB_TOKEN,
         repo: process.env.GITHUB_REPOSITORY,
         issueNumber,
-        body: markdownReport(stats, tiles)
+        body: markdownReport(stats, tiles, { skipped })
       });
     } catch (error) {
       command("warning", `PR comment failed: ${error.message}`);

@@ -1,6 +1,7 @@
 const MARKER = '<!-- tilesmith-qc -->';
-const DISCLAIMER =
-  '🍀 This service is free. To keep it free, we collect anonymous scoring logs (scores, gate, size class, timestamp). Images and personal data are never stored.';
+const DASHBOARD_URL = 'https://tilesmith.kleeblatt.space';
+const FAIR_USE_URL = 'https://github.com/KleeBlattSpace/tilesmith-actions/blob/main/docs/fair-use.md';
+const DISCLAIMER = `🍀 This service is free under [fair use](${FAIR_USE_URL}) (hobby CI; no published monthly cap yet). To keep it free, we collect anonymous scoring logs (scores, gate, size class, timestamp). Images and personal data are never stored.`;
 
 export function aggregate(tiles) {
   const stats = { total: tiles.length, production: 0, review: 0, reject: 0, avg: 0 };
@@ -18,7 +19,11 @@ export function aggregate(tiles) {
 /** Maximum table rows rendered in a PR comment / step summary before collapsing. */
 const MAX_ROWS = 30;
 
-export function markdownReport(stats, tiles) {
+/**
+ * Job-summary / PR-comment body shown in *other people's* workflows.
+ * Lead with a one-glance gate board + a dashboard link; table is secondary.
+ */
+export function markdownReport(stats, tiles, { skipped = 0 } = {}) {
   const shown = tiles.slice(0, MAX_ROWS);
   const rows = shown
     .map((t) => `| ${t.file} | ${t.overall ?? '—'} | ${t.gate ?? 'Review'} | ${t.size_class ?? '—'} |`)
@@ -27,13 +32,59 @@ export function markdownReport(stats, tiles) {
     tiles.length > MAX_ROWS
       ? `\n\n…and ${tiles.length - MAX_ROWS} more — see the \`tilesmith-report\` artifact for the full list.\n`
       : '';
-  return `${MARKER}\n## TileSmith QC\n\n**${stats.total}** tiles scored · Average **${stats.avg}**\n\n| File | Score | Gate | Size class |\n|---|---:|---|---|\n${rows || '| No matching tiles | — | — | — |'}\n${more}\n${DISCLAIMER}\n\n[Get your free API key](https://app.kleeblatt.space)${stats.review + stats.reject > 0 ? ' · Review or Reject results may require an upgrade.' : ''}`;
+  const skippedLine =
+    skipped > 0 ? `\n_${skipped} tile${skipped === 1 ? '' : 's'} could not be scored (network/API)._\n` : '';
+  const needsWork = stats.review + stats.reject > 0;
+  // Visible only when QC found something to fix — otherwise it is just noise.
+  const nextStep = needsWork
+    ? `\nTiles on Review/Reject: open [TileFix Doctor](${DASHBOARD_URL}) in TileSmith Studio (browser, local-first) to clean seams before the next push.\n`
+    : '';
+  const studio =
+    `<details>\n<summary>About this check</summary>\n\n` +
+    `TileSmith QC is the free CI slice of [TileSmith Studio](${DASHBOARD_URL}): ` +
+    `**TileFix Doctor** → **TileSet Creator** → **Terrain Studio** → **TileMap Creator**. ` +
+    `Scoring stays in this action; fixing and assembling tiles happens in the studio.\n\n</details>`;
+  return `${MARKER}
+## TileSmith QC
+
+| ✅ Production | ⚠️ Review | ❌ Reject | Average |
+| :---: | :---: | :---: | :---: |
+| **${stats.production}** | **${stats.review}** | **${stats.reject}** | **${stats.avg}** |
+
+**${stats.total}** tiles scored${skippedLine}${nextStep}
+[Account & API Keys](${DASHBOARD_URL}) · [Marketplace](https://github.com/marketplace/actions/tilesmith-qc)
+
+<details>
+<summary>Per-tile scores</summary>
+
+| File | Score | Gate | Size class |
+|---|---:|---|---|
+${rows || '| No matching tiles | — | — | — |'}
+${more}
+</details>
+
+${studio}
+
+${DISCLAIMER}
+
+[Fair use](${FAIR_USE_URL})`;
 }
 
-export async function writeSummary(summaryPath, stats, tiles) {
+export async function writeSummary(summaryPath, stats, tiles, extras = {}) {
   if (!summaryPath) return;
   const { appendFile } = await import('node:fs/promises');
-  await appendFile(summaryPath, `${markdownReport(stats, tiles)}\n`);
+  await appendFile(summaryPath, `${markdownReport(stats, tiles, extras)}\n`);
+}
+
+/** Folded log group so the consumer workflow log has a scannable overview. */
+export function logOverview(stats, { skipped = 0 } = {}) {
+  console.log('::group::TileSmith QC overview');
+  console.log(
+    `Production ${stats.production} · Review ${stats.review} · Reject ${stats.reject} · skipped ${skipped} · avg ${stats.avg}`,
+  );
+  console.log(`Account & API Keys (sign in): ${DASHBOARD_URL}`);
+  console.log('::endgroup::');
+  console.log(`::notice::TileSmith QC — ${stats.total} tiles, avg ${stats.avg}. Keys/usage/billing: ${DASHBOARD_URL}`);
 }
 
 export async function upsertComment({ token, repo, issueNumber, body, fetchImpl = fetch }) {
@@ -65,4 +116,4 @@ export async function upsertComment({ token, repo, issueNumber, body, fetchImpl 
   return true;
 }
 
-export { DISCLAIMER, MARKER };
+export { DISCLAIMER, MARKER, DASHBOARD_URL, FAIR_USE_URL };

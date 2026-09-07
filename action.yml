@@ -9,7 +9,7 @@ branding:
   color: green
 inputs:
   api-key:
-    description: 'TileSmith API key (ts_…). Optional: if empty (e.g. fork PRs without secrets), the action skips QC with a notice instead of failing.'
+    description: 'TileSmith API key (tsmith_live_…). Optional: if empty (e.g. fork PRs without secrets), the action skips QC with a notice instead of failing.'
     required: false
   paths:
     description: 'Comma-separated glob patterns (** crosses directories, * stays in one segment)'
