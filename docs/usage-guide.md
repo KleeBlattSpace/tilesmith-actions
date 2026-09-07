@@ -131,7 +131,7 @@ If nothing matches, the run emits a `::warning` — check your patterns before a
 
 ## Reading the results
 
-- **PR comment** — gate counts at a glance, a link to [TileSmith settings](https://tilesmith.kleeblatt.space), then a collapsible per-tile table. One comment per PR, updated in place; lists longer than 30 tiles point at the artifact.
+- **PR comment** — gate counts at a glance, a sign-in link to [TileSmith](https://tilesmith.kleeblatt.space) (keys / rotation / stats), then a collapsible per-tile table. One comment per PR, updated in place; lists longer than 30 tiles point at the artifact.
 - **Overlay PNGs** (in the `tilesmith-report` artifact) — your tile with a colored frame and score label:
   - 🟢 green `Production` — ready to ship
   - 🟡 yellow `Review` — take a look, usually minor seam/border issues

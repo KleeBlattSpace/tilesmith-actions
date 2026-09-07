@@ -130,7 +130,7 @@ async function requestScore(buffer, apiKey, fetchImpl = fetch) {
       if ([401, 403].includes(response.status))
         throw Object.assign(new Error('Authentication failed. Check your API key and dashboard.'), { code: 2 });
       if (response.status === 402)
-        throw Object.assign(new Error('TileSmith quota exhausted. Upgrade at https://tilesmith.kleeblatt.space.'), {
+        throw Object.assign(new Error('TileSmith quota exhausted. Sign in at https://tilesmith.kleeblatt.space.'), {
           code: 2,
         });
       if (response.status === 429) {
@@ -212,7 +212,7 @@ async function main() {
   const { failOn, maxFiles } = validate();
   const apiKey = input('api-key');
   if (!apiKey) {
-    command('notice', 'No API key – skipping QC. Free key: https://tilesmith.kleeblatt.space');
+    command('notice', 'No API key – skipping QC. Sign in and create a key: https://tilesmith.kleeblatt.space');
     return;
   }
   const patterns = input('paths', 'assets/**')

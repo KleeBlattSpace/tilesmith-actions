@@ -2249,7 +2249,7 @@ _${skipped} tile${skipped === 1 ? "" : "s"} could not be scored (network/API)._
 
 **${stats.total}** tiles scored${skippedLine}
 
-[Open TileSmith settings](${DASHBOARD_URL}) \xB7 [Marketplace](https://github.com/marketplace/actions/tilesmith-qc)
+[Sign in to TileSmith](${DASHBOARD_URL}) \u2014 API keys, rotation, run statistics (auth required) \xB7 [Marketplace](https://github.com/marketplace/actions/tilesmith-qc)
 
 <details>
 <summary>Per-tile scores</summary>
@@ -2380,7 +2380,7 @@ async function requestScore(buffer, apiKey, fetchImpl = fetch) {
       if ([401, 403].includes(response.status))
         throw Object.assign(new Error("Authentication failed. Check your API key and dashboard."), { code: 2 });
       if (response.status === 402)
-        throw Object.assign(new Error("TileSmith quota exhausted. Upgrade at https://tilesmith.kleeblatt.space."), {
+        throw Object.assign(new Error("TileSmith quota exhausted. Sign in at https://tilesmith.kleeblatt.space."), {
           code: 2
         });
       if (response.status === 429) {
@@ -2455,7 +2455,7 @@ async function main() {
   const { failOn, maxFiles } = validate();
   const apiKey = input("api-key");
   if (!apiKey) {
-    command("notice", "No API key \u2013 skipping QC. Free key: https://tilesmith.kleeblatt.space");
+    command("notice", "No API key \u2013 skipping QC. Sign in and create a key: https://tilesmith.kleeblatt.space");
     return;
   }
   const patterns = input("paths", "assets/**").split(",").map((p) => p.trim()).filter(Boolean);

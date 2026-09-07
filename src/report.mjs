@@ -44,7 +44,7 @@ export function markdownReport(stats, tiles, { skipped = 0 } = {}) {
 
 **${stats.total}** tiles scored${skippedLine}
 
-[Open TileSmith settings](${DASHBOARD_URL}) · [Marketplace](https://github.com/marketplace/actions/tilesmith-qc)
+[Sign in to TileSmith](${DASHBOARD_URL}) — API keys, rotation, run statistics (auth required) · [Marketplace](https://github.com/marketplace/actions/tilesmith-qc)
 
 <details>
 <summary>Per-tile scores</summary>
@@ -72,9 +72,11 @@ export function logOverview(stats, { skipped = 0 } = {}) {
   console.log(
     `Production ${stats.production} · Review ${stats.review} · Reject ${stats.reject} · skipped ${skipped} · avg ${stats.avg}`,
   );
-  console.log(`Settings: ${DASHBOARD_URL}`);
+  console.log(`Dashboard (sign in): ${DASHBOARD_URL}`);
   console.log('::endgroup::');
-  console.log(`::notice::TileSmith QC — ${stats.total} tiles, avg ${stats.avg}. Dashboard: ${DASHBOARD_URL}`);
+  console.log(
+    `::notice::TileSmith QC — ${stats.total} tiles, avg ${stats.avg}. Sign in for keys/stats: ${DASHBOARD_URL}`,
+  );
 }
 
 export async function upsertComment({ token, repo, issueNumber, body, fetchImpl = fetch }) {
