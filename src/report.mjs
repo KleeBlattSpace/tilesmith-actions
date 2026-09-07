@@ -44,7 +44,7 @@ export function markdownReport(stats, tiles, { skipped = 0 } = {}) {
 
 **${stats.total}** tiles scored${skippedLine}
 
-[Sign in to TileSmith](${DASHBOARD_URL}) — API keys, rotation, run statistics (auth required) · [Marketplace](https://github.com/marketplace/actions/tilesmith-qc)
+[Account & API Keys](${DASHBOARD_URL}) — create, rotate, revoke keys · usage stats · billing (sign in) · [Marketplace](https://github.com/marketplace/actions/tilesmith-qc)
 
 <details>
 <summary>Per-tile scores</summary>
@@ -57,7 +57,7 @@ ${more}
 
 ${DISCLAIMER}
 
-[Get your free API key](${DASHBOARD_URL})${upgrade}`;
+[Create or rotate an API key](${DASHBOARD_URL})${upgrade}`;
 }
 
 export async function writeSummary(summaryPath, stats, tiles, extras = {}) {
@@ -72,11 +72,9 @@ export function logOverview(stats, { skipped = 0 } = {}) {
   console.log(
     `Production ${stats.production} · Review ${stats.review} · Reject ${stats.reject} · skipped ${skipped} · avg ${stats.avg}`,
   );
-  console.log(`Dashboard (sign in): ${DASHBOARD_URL}`);
+  console.log(`Account & API Keys (sign in): ${DASHBOARD_URL}`);
   console.log('::endgroup::');
-  console.log(
-    `::notice::TileSmith QC — ${stats.total} tiles, avg ${stats.avg}. Sign in for keys/stats: ${DASHBOARD_URL}`,
-  );
+  console.log(`::notice::TileSmith QC — ${stats.total} tiles, avg ${stats.avg}. Keys/usage/billing: ${DASHBOARD_URL}`);
 }
 
 export async function upsertComment({ token, repo, issueNumber, body, fetchImpl = fetch }) {

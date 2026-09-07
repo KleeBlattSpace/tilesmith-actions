@@ -2249,7 +2249,7 @@ _${skipped} tile${skipped === 1 ? "" : "s"} could not be scored (network/API)._
 
 **${stats.total}** tiles scored${skippedLine}
 
-[Sign in to TileSmith](${DASHBOARD_URL}) \u2014 API keys, rotation, run statistics (auth required) \xB7 [Marketplace](https://github.com/marketplace/actions/tilesmith-qc)
+[Account & API Keys](${DASHBOARD_URL}) \u2014 create, rotate, revoke keys \xB7 usage stats \xB7 billing (sign in) \xB7 [Marketplace](https://github.com/marketplace/actions/tilesmith-qc)
 
 <details>
 <summary>Per-tile scores</summary>
@@ -2262,7 +2262,7 @@ ${more}
 
 ${DISCLAIMER}
 
-[Get your free API key](${DASHBOARD_URL})${upgrade}`;
+[Create or rotate an API key](${DASHBOARD_URL})${upgrade}`;
 }
 async function writeSummary(summaryPath, stats, tiles, extras = {}) {
   if (!summaryPath) return;
@@ -2455,7 +2455,7 @@ async function main() {
   const { failOn, maxFiles } = validate();
   const apiKey = input("api-key");
   if (!apiKey) {
-    command("notice", "No API key \u2013 skipping QC. Sign in and create a key: https://tilesmith.kleeblatt.space");
+    command("notice", "No API key \u2013 skipping QC. Sign in \u2192 Account & API Keys: https://tilesmith.kleeblatt.space");
     return;
   }
   const patterns = input("paths", "assets/**").split(",").map((p) => p.trim()).filter(Boolean);

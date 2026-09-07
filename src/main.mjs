@@ -212,7 +212,7 @@ async function main() {
   const { failOn, maxFiles } = validate();
   const apiKey = input('api-key');
   if (!apiKey) {
-    command('notice', 'No API key – skipping QC. Sign in and create a key: https://tilesmith.kleeblatt.space');
+    command('notice', 'No API key – skipping QC. Sign in → Account & API Keys: https://tilesmith.kleeblatt.space');
     return;
   }
   const patterns = input('paths', 'assets/**')

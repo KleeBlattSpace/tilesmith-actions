@@ -16,7 +16,7 @@ Everything you need to go from zero to automated tile quality checks on every pu
 
 ### 1. Get your API key
 
-Create a free key at [app.kleeblatt.space](https://tilesmith.kleeblatt.space). Keys look like `ts_…`.
+Sign in at [tilesmith.kleeblatt.space](https://tilesmith.kleeblatt.space) → **Account & API Keys**. Create, rotate, or revoke keys there (full secret is shown only once; they look like `tsmith_live_…`). The same page has live API usage and Stripe billing.
 
 ### 2. Add the key as a repository secret
 

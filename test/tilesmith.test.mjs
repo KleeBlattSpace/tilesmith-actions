@@ -33,7 +33,7 @@ test('markdown contains marker, table, disclaimer and upgrade hint', () => {
   assert.match(text, /Images and personal data are never stored/);
   assert.match(text, /upgrade/i);
   assert.match(text, /tilesmith\.kleeblatt\.space/);
-  assert.match(text, /Sign in to TileSmith/);
+  assert.match(text, /Account & API Keys/);
   assert.match(text, /✅ Production/);
 });
 

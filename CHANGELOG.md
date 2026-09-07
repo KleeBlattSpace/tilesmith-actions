@@ -6,7 +6,8 @@ All notable changes to this project are documented here.
 
 ### Added
 
-- Job summary and PR comment now lead with a Production / Review / Reject board and a **sign-in** link to [tilesmith.kleeblatt.space](https://tilesmith.kleeblatt.space) (keys, rotation, statistics — dashboard is authenticated).
+- Job summary and PR comment now lead with a Production / Review / Reject board and an **Account & API Keys** link to [tilesmith.kleeblatt.space](https://tilesmith.kleeblatt.space) (create / rotate / revoke, usage, Stripe billing — sign-in required).
+- Docs and `action.yml` now describe keys as `tsmith_live_…` (secret shown only once).
 - Folded `::group::TileSmith QC overview` in the Actions log (counts + dashboard URL).
 
 ### Fixes
