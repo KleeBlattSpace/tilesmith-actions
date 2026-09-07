@@ -10,7 +10,8 @@ All notable changes to this project are documented here.
 - Docs and `action.yml` now describe keys as `tsmith_live_…` (secret shown only once).
 - [Fair use policy](docs/fair-use.md): no published monthly cap; hobby CI is intended; abuse / resale is not. Linked from the job summary and README.
 - Soft studio pointer: a one-line TileFix Doctor hint **only** when Review/Reject tiles exist; pipeline names sit in a collapsed “About this check” block so green PRs stay quiet.
-- Overlay chrome: bottom bar `QC 1/4` plus four pips (first filled) so artifacts quietly read as step one of the studio pipeline. Banner matches.
+- Overlay chrome: bottom bar `QC 1/4` plus four pips (first filled) so artifacts quietly read as step one of the studio pipeline.
+- Banner: fewer, larger isometric tiles; tagline **2D pixel art quality scoring**; QC → Doctor → Set → Map strip.
 - Folded `::group::TileSmith QC overview` in the Actions log (counts + dashboard URL).
 
 ### Fixes

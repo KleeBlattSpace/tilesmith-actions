@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/images/banner.png" alt="TileSmith QC — free GitHub Action for game tile quality control" width="880">
+  <img src="docs/images/banner.png" alt="TileSmith QC — 2D pixel art quality scoring" width="880">
 </p>
 
 <h1 align="center">TileSmith QC</h1>
