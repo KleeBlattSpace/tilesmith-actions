@@ -245,7 +245,8 @@ async function main() {
   };
   await mkdir(join(root, 'tilesmith-report'), { recursive: true });
   await writeFile(join(root, 'tilesmith-report', 'report.json'), JSON.stringify(metadata, null, 2) + '\n');
-  await writeSummary(process.env.GITHUB_STEP_SUMMARY, stats, tiles);
+  logOverview(stats, { skipped });
+  await writeSummary(process.env.GITHUB_STEP_SUMMARY, stats, tiles, { skipped });
   const issue = process.env.GITHUB_EVENT_PATH ? JSON.parse(await readFile(process.env.GITHUB_EVENT_PATH, 'utf8')) : {};
   const issueNumber = issue.pull_request?.number;
   if (process.env.GITHUB_TOKEN && issueNumber) {
@@ -254,7 +255,7 @@ async function main() {
         token: process.env.GITHUB_TOKEN,
         repo: process.env.GITHUB_REPOSITORY,
         issueNumber,
-        body: markdownReport(stats, tiles),
+        body: markdownReport(stats, tiles, { skipped }),
       });
     } catch (error) {
       command('warning', `PR comment failed: ${error.message}`);

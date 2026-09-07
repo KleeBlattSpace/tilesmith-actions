@@ -2316,6 +2316,15 @@ async function writeSummary(summaryPath, stats, tiles, extras = {}) {
   await appendFile(summaryPath, `${markdownReport(stats, tiles, extras)}
 `);
 }
+function logOverview(stats, { skipped = 0 } = {}) {
+  console.log("::group::TileSmith QC overview");
+  console.log(
+    `Production ${stats.production} \xB7 Review ${stats.review} \xB7 Reject ${stats.reject} \xB7 skipped ${skipped} \xB7 avg ${stats.avg}`
+  );
+  console.log(`Account & API Keys (sign in): ${DASHBOARD_URL}`);
+  console.log("::endgroup::");
+  console.log(`::notice::TileSmith QC \u2014 ${stats.total} tiles, avg ${stats.avg}. Keys/usage/billing: ${DASHBOARD_URL}`);
+}
 async function upsertComment({ token, repo, issueNumber, body, fetchImpl = fetch }) {
   if (!token || !repo || !issueNumber) return false;
   const headers = {
@@ -2531,7 +2540,8 @@ async function main() {
   };
   await mkdir(join(root, "tilesmith-report"), { recursive: true });
   await writeFile(join(root, "tilesmith-report", "report.json"), JSON.stringify(metadata, null, 2) + "\n");
-  await writeSummary(process.env.GITHUB_STEP_SUMMARY, stats, tiles);
+  logOverview(stats, { skipped });
+  await writeSummary(process.env.GITHUB_STEP_SUMMARY, stats, tiles, { skipped });
   const issue = process.env.GITHUB_EVENT_PATH ? JSON.parse(await readFile(process.env.GITHUB_EVENT_PATH, "utf8")) : {};
   const issueNumber = issue.pull_request?.number;
   if (process.env.GITHUB_TOKEN && issueNumber) {
@@ -2540,7 +2550,7 @@ async function main() {
         token: process.env.GITHUB_TOKEN,
         repo: process.env.GITHUB_REPOSITORY,
         issueNumber,
-        body: markdownReport(stats, tiles)
+        body: markdownReport(stats, tiles, { skipped })
       });
     } catch (error) {
       command("warning", `PR comment failed: ${error.message}`);
