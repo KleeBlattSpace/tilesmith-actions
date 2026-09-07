@@ -135,7 +135,7 @@ There is **no published monthly call limit** on Free right now — hobby and sma
 
 **Is the scoring legit?** The gates and all six metrics are validated against public, reproducible fixtures in the [gc-pipeline-benchmark](https://github.com/KleeBlattSpace/gc-pipeline-benchmark) repo — 120 CC0 tiles, ground truth, `npm run benchmark` to check it yourself.
 
-**Got tiles in Review or Reject?** [Case Study 01 — Why 4.9 ★ ≠ Production-Ready](https://github.com/KleeBlattSpace/gc-pipeline-benchmark/blob/main/docs/CASE_STUDY_01.md) audits 10 free asset packs (240 tiles) and shows the full journey from raw scores to production-ready — including a tool-agnostic defect taxonomy and a 7-point shipping checklist.
+**Got tiles in Review or Reject?** [Case Study 01 — Why the Most-Downloaded Packs ≠ Production-Ready](https://github.com/KleeBlattSpace/gc-pipeline-benchmark/blob/main/docs/CASE_STUDY_01.md) audits the 10 most-downloaded free tilemap packs on itch.io (240 tiles) and shows the full journey from raw scores to production-ready — including a tool-agnostic defect taxonomy and a 7-point shipping checklist.
 
 **The fix pass itself** (seam healing, artifact removal, variation) runs in [TileSmith Studio](https://tilesmith.kleeblatt.space) — local-first, no account needed to start. Fixed tiles re-score here in your PRs, so the loop closes in your own CI.
 
