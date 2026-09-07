@@ -29,6 +29,7 @@ All notable changes to this project are documented here.
 - PR comment / step summary collapse long tile lists after 30 rows.
 - End-to-end smoke test for the committed bundle (`test/smoke.mjs`) and glob/pagination unit tests.
 - `ROADMAP.md` tracking status and remaining work.
+- Docs: full [usage guide](docs/usage-guide.md) and a conceptual [how-scoring-works](docs/how-scoring-works.md) explainer — the evaluation models/thresholds remain server-side and are not part of this repository.
 
 [Unreleased]: https://github.com/KleeBlattSpace/tilesmith-actions/compare/v1.1.0...HEAD
 [1.1.0]: https://github.com/KleeBlattSpace/tilesmith-actions/releases/tag/v1.1.0

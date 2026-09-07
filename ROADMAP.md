@@ -12,6 +12,7 @@ Last updated: 2026-09-07 (v1.1.0).
 - **Tests**: 13 unit/contract tests (`npm test`) + end-to-end smoke test of the committed bundle against a mock API (`node test/smoke.mjs`) covering keyless, keyed, glob scoping, overlay-collision handling, outputs, and fail-on.
 - **CI**: `selftest.yml` (test/build/lint/format + dogfooding the action on CC0 fixtures, keyless or keyed via `TILESMITH_STAGING_KEY`), `dist.yml` (auto-rebuild + push of committed `dist/`, fork-safe), `release.yml` (tag `v*` ⇒ sync check ⇒ attestation ⇒ GitHub release ⇒ move major tag).
 - **Docs**: README with banner, badges, real overlay examples, quickstart incl. artifact upload, inputs/outputs, example PR comment, honest privacy section, support section, collapsible FAQ; SUPPORT.md, CONTRIBUTING.md, CODE_OF_CONDUCT.md, SECURITY.md (with contact email), CHANGELOG, MIT license, CC0 fixture provenance; issue templates (bug/feature forms + contact links) and PR template.
+- **User docs**: `docs/usage-guide.md` (step-by-step setup, `paths` semantics with examples, workflow recipes, report.json reference, troubleshooting, FAQ) and `docs/how-scoring-works.md` (conceptual explanation of seams/borders/artifacts, gates, privacy pipeline — with an explicit open-client / server-side-IP split; no scoring logic in this repo).
 - **Marketplace-ready branding**: `action.yml` name/description/icon (`grid`, green) tuned for the GitHub Marketplace listing; marketplace badge/link in README.
 
 ## 🔜 Before announcing (blocking)
