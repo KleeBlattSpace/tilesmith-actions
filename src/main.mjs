@@ -5,6 +5,8 @@ import { aggregate, markdownReport, upsertComment, writeSummary } from './report
 
 const API_URL = process.env.TILESMITH_API_URL || 'https://api.kleeblatt.space/v1/score';
 const REPORTS_URL = process.env.TILESMITH_REPORTS_URL || API_URL.replace(/\/score\/?$/, '/reports');
+/** Keep in sync with package.json version. Single source of truth is planned, see ROADMAP. */
+const ACTION_VERSION = '1.1.0';
 const root = process.env.GITHUB_WORKSPACE || process.cwd();
 /**
  * Get environment variable value, treating empty/whitespace as unset.
@@ -43,12 +45,12 @@ function validate() {
   const failOn = input('fail-on', 'Reject').toLowerCase();
   if (!['reject', 'review', 'never'].includes(failOn))
     throw new Error('Invalid fail-on: use Reject, Review, or never.');
-  
+
   const maxFilesStr = input('max-files', '100');
   const maxFiles = Number(maxFilesStr);
   if (!Number.isInteger(maxFiles) || maxFiles < 1 || maxFiles > 500)
     throw new Error('Invalid max-files: use an integer from 1 to 500.');
-  
+
   return { failOn, maxFiles };
 }
 
@@ -62,14 +64,55 @@ async function walk(dir, found = []) {
   return found;
 }
 
+/**
+ * Convert one glob pattern into an anchored RegExp.
+ *
+ * Semantics (documented in README):
+ * - `**` matches across `/` boundaries (e.g. `assets/**` = everything below `assets/`)
+ * - `*` and `?` match within a single path segment (e.g. `assets/*.png` = direct children only)
+ * - a leading double-star also matches zero directories (a pattern ending in `*.png`
+ *   behind it matches top-level files too)
+ * - a pattern without wildcards is treated as a directory prefix (`assets` behaves like `assets/**`)
+ * @param {string} pattern - Glob pattern with `/` path separators
+ * @returns {RegExp} - Anchored regex equivalent of the pattern
+ */
+export function globToRegex(pattern) {
+  const p = pattern.trim().replace(/^\.?\//, '');
+  if (!p) return /$^/; // matches nothing
+  if (!/[*?]/.test(p)) return new RegExp(`^${p.replace(/[.+^${}()|[\]\\]/g, '\\$&')}(?:/|$)`);
+  let re = '';
+  for (let i = 0; i < p.length; i++) {
+    const char = p[i];
+    if (char === '*') {
+      let j = i;
+      while (p[j] === '*') j++;
+      const double = j - i >= 2;
+      const prev = p[i - 1];
+      const next = p[j];
+      if (double && next === '/' && (prev === '/' || prev === undefined)) {
+        // `a/**/b` (also zero dirs) and leading `**/b`
+        re += '(?:[^/]+/)*';
+        i = j; // consuming the following '/' here; loop's i++ skips past it
+      } else if (double) {
+        re += '.*';
+        i = j - 1;
+      } else {
+        re += '[^/]*';
+        i = j - 1;
+      }
+    } else if (char === '?') {
+      re += '[^/]';
+    } else {
+      re += char.replace(/[.+^${}()|[\]\\]/g, '\\$&');
+    }
+  }
+  return new RegExp(`^${re}$`);
+}
+
+/** @param {string} file @param {string[]} patterns @returns {boolean} */
 function matches(file, patterns) {
   const normalized = relative(root, file).split('\\').join('/');
-  return patterns.some((pattern) => {
-    const p = pattern.trim().replace(/^\.\//, '').replaceAll('**', '*');
-    if (!p) return false;
-    const escaped = p.replace(/[.+^${}()|[\]\\]/g, '\\$&').replaceAll('*', '.*');
-    return new RegExp(`^${escaped}$`).test(normalized) || new RegExp(`^${escaped}`).test(normalized);
-  });
+  return patterns.some((pattern) => globToRegex(pattern).test(normalized));
 }
 
 async function requestScore(buffer, apiKey, fetchImpl = fetch) {
@@ -125,7 +168,7 @@ async function requestScore(buffer, apiKey, fetchImpl = fetch) {
   return null;
 }
 
-async function scoreOne(file, apiKey) {
+async function scoreOne(file, apiKey, usedNames) {
   const buffer = await readFile(file);
   const result = await requestScore(buffer, apiKey);
   if (!result) return null;
@@ -140,8 +183,14 @@ async function scoreOne(file, apiKey) {
     .replace(/^\/+|\.\./g, '')
     .replaceAll('/', '_')
     .replace(/[^a-zA-Z0-9_.-]/g, '_');
+  const stem = safe.replace(/\.png$/i, '');
+  const ext = /\.png$/i.test(safe) ? '.png' : '';
+  let name = safe;
+  for (let n = 2; usedNames.has(name); n++) name = `${stem}-${n}${ext}`;
+  usedNames.add(name);
+  const overlayName = name.endsWith('.png') ? name : `${name}.png`;
   await mkdir(join(root, 'tilesmith-report'), { recursive: true });
-  await writeFile(join(root, 'tilesmith-report', `${safe}.png`), renderOverlay(buffer, tile));
+  await writeFile(join(root, 'tilesmith-report', overlayName), renderOverlay(buffer, tile));
   return tile;
 }
 
@@ -166,19 +215,31 @@ async function main() {
     command('notice', 'No API key – skipping QC. Free key: https://app.kleeblatt.space');
     return;
   }
-  const patterns = input('paths', 'assets/**').split(',');
+  const patterns = input('paths', 'assets/**')
+    .split(',')
+    .map((p) => p.trim())
+    .filter(Boolean);
   const files = (await walk(root)).filter((file) => matches(file, patterns)).slice(0, maxFiles);
+  if (files.length === 0)
+    command('warning', `No image tiles found for paths '${patterns.join(', ')}'. Check the 'paths' input.`);
+  else if (files.length === maxFiles)
+    command('notice', `Reached max-files limit (${maxFiles}); only the first ${maxFiles} tiles were scored.`);
+  const usedNames = new Set();
   const tiles = [];
+  let skipped = 0;
   for (let i = 0; i < files.length; i += 4) {
-    const batch = await Promise.all(files.slice(i, i + 4).map((file) => scoreOne(file, apiKey)));
-    tiles.push(...batch.filter(Boolean));
+    const batch = await Promise.all(files.slice(i, i + 4).map((file) => scoreOne(file, apiKey, usedNames)));
+    for (const tile of batch) {
+      if (tile) tiles.push(tile);
+      else skipped += 1;
+    }
   }
   const stats = aggregate(tiles);
   const metadata = {
     repo: process.env.GITHUB_REPOSITORY || '',
     ref: process.env.GITHUB_REF || '',
     commit: process.env.GITHUB_SHA || '',
-    action_version: '1.0.0',
+    action_version: ACTION_VERSION,
     stats,
     tiles,
   };
@@ -204,6 +265,7 @@ async function main() {
     production: stats.production,
     review: stats.review,
     reject: stats.reject,
+    skipped,
     avg: stats.avg,
     report: 'tilesmith-report/report.json',
   })

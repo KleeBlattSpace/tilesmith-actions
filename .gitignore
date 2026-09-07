@@ -1,5 +1,10 @@
 node_modules/
 .npm/
 coverage/
+tilesmith-report/
 .DS_Store
 .env
+# dist/ is intentionally NOT ignored: dist/index.mjs is the committed runtime
+# artifact consumed by user workflows (kept in sync by .github/workflows/dist.yml).
+# tests/fixtures/SOURCES-*.md and KENNEY_LICENSE.txt are tracked on purpose:
+# CC0 provenance for the bundled fixtures.

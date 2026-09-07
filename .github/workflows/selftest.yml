@@ -6,7 +6,6 @@ on:
 
 permissions:
   contents: read
-  pull-requests: write
 
 jobs:
   test:
@@ -22,3 +21,42 @@ jobs:
       - run: npm run build
       - run: npm run lint
       - run: npm run format:check
+
+  dogfood:
+    # Runs this very action against the CC0 fixtures in tests/fixtures/.
+    # Without TILESMITH_STAGING_KEY (e.g. fork PRs) this exercises the graceful
+    # keyless path; with the key it scores against the configured API and
+    # asserts the baseline expectations from tests/fixtures/v2-baseline-output.txt.
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    env:
+      KEY: ${{ secrets.TILESMITH_STAGING_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run TileSmith QC on fixtures
+        id: qc
+        uses: ./
+        with:
+          api-key: ${{ secrets.TILESMITH_STAGING_KEY }}
+          paths: 'tests/fixtures/**'
+          fail-on: never
+        env:
+          TILESMITH_API_URL: ${{ secrets.TILESMITH_STAGING_URL }}
+      - name: Verify dogfood results
+        env:
+          QC_PRODUCTION: ${{ steps.qc.outputs.production }}
+        run: |
+          if [ -z "$KEY" ]; then
+            node test/dogfood-verify.mjs keyless
+          else
+            node test/dogfood-verify.mjs keyed
+          fi
+      - name: Upload report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tilesmith-report
+          path: tilesmith-report/
+          if-no-files-found: warn
