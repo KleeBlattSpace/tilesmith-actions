@@ -9,14 +9,14 @@ Everything you need to go from zero to automated tile quality checks on every pu
 ## Requirements
 
 - A GitHub repository containing game tiles as PNG, JPEG, or WebP files.
-- A free TileSmith API key from the [dashboard](https://app.kleeblatt.space).
+- A free TileSmith API key from the [dashboard](https://tilesmith.kleeblatt.space).
 - Nothing else — no dependencies, no build step, works on `ubuntu-latest`, `windows-latest`, and `macos-latest`.
 
 ## Setup
 
 ### 1. Get your API key
 
-Create a free key at [app.kleeblatt.space](https://app.kleeblatt.space). Keys look like `ts_…`.
+Create a free key at [app.kleeblatt.space](https://tilesmith.kleeblatt.space). Keys look like `ts_…`.
 
 ### 2. Add the key as a repository secret
 
@@ -131,12 +131,12 @@ If nothing matches, the run emits a `::warning` — check your patterns before a
 
 ## Reading the results
 
-- **PR comment** — a table of every scored tile (file, score, gate, size class). One comment per PR, updated in place; lists longer than 30 tiles are collapsed with a pointer to the artifact.
+- **PR comment** — gate counts at a glance, a link to [TileSmith settings](https://tilesmith.kleeblatt.space), then a collapsible per-tile table. One comment per PR, updated in place; lists longer than 30 tiles point at the artifact.
 - **Overlay PNGs** (in the `tilesmith-report` artifact) — your tile with a colored frame and score label:
   - 🟢 green `Production` — ready to ship
   - 🟡 yellow `Review` — take a look, usually minor seam/border issues
   - 🔴 red `Reject` — clear problems detected
-- **Step summary** — the same table on the workflow run page.
+- **Step summary** — the same overview on the workflow run page (Job summary), plus a folded `TileSmith QC overview` group in the log with the dashboard URL.
 - **`report.json`** — machine-readable results, see [below](#reportjson-reference).
 
 Exit codes, in case you script around the action: `0` OK · `1` quality gate tripped (`fail-on`) · `2` configuration/auth/quota error.
@@ -158,7 +158,7 @@ No image data, no hashes — just paths, scores, and metadata.
 
 ## Controlling cost & quota
 
-- **Free tier** — covers hobby and small studio use; see the [dashboard](https://app.kleeblatt.space) for your plan's limits.
+- **Free tier** — covers hobby and small studio use; see the [dashboard](https://tilesmith.kleeblatt.space) for your plan's limits.
 - **`max-files`** caps tiles per run (1–500, default 100). Use narrower `paths` to spend quota on the tiles that matter.
 - When the quota is exhausted, the action exits `2` with a dashboard link — it never fails silently, and it never marks good tiles as bad.
 
@@ -169,7 +169,7 @@ No image data, no hashes — just paths, scores, and metadata.
 | `No image tiles found for paths …` | Pattern doesn't match — see [Choosing `paths`](#choosing-paths).                                                                      |
 | No PR comment, but run is green    | Missing `permissions: pull-requests: write`, or the run isn't a pull_request event. The step summary and artifact are still produced. |
 | `No API key – skipping QC` notice  | Secret missing/empty (normal on fork PRs) — see [FAQ](#faq).                                                                          |
-| Exit `2`, authentication message   | Key wrong/revoked — re-copy it from the [dashboard](https://app.kleeblatt.space).                                                     |
+| Exit `2`, authentication message   | Key wrong/revoked — re-copy it from the [dashboard](https://tilesmith.kleeblatt.space).                                               |
 | Exit `2`, quota message            | Plan limit reached — the message contains the upgrade link.                                                                           |
 | Exit `1`                           | Working as intended: tiles below your `fail-on` gate were found. Check the overlays.                                                  |
 | Empty artifact                     | No tiles matched `paths`, or the upload step lacks `if: always()`.                                                                    |

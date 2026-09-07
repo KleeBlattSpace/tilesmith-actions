@@ -2,6 +2,17 @@
 
 All notable changes to this project are documented here.
 
+## [Unreleased]
+
+### Added
+
+- Job summary and PR comment now lead with a Production / Review / Reject board and a link to [TileSmith settings](https://tilesmith.kleeblatt.space), so consumer workflows get a scannable overview instead of only a raw table.
+- Folded `::group::TileSmith QC overview` in the Actions log (counts + dashboard URL).
+
+### Fixes
+
+- Dashboard / API-key / quota links now point at `https://tilesmith.kleeblatt.space` (the previous `app.kleeblatt.space` / `app.tilesmith.space` hosts do not resolve to settings).
+
 ## [1.1.0] - 2026-09-07
 
 ### Highlights

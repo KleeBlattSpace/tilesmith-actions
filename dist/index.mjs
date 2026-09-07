@@ -2214,6 +2214,7 @@ function renderOverlay(input2, score = {}) {
 
 // src/report.mjs
 var MARKER = "<!-- tilesmith-qc -->";
+var DASHBOARD_URL = "https://tilesmith.kleeblatt.space";
 var DISCLAIMER = "\u{1F340} This service is free. To keep it free, we collect anonymous scoring logs (scores, gate, size class, timestamp). Images and personal data are never stored.";
 function aggregate(tiles) {
   const stats = { total: tiles.length, production: 0, review: 0, reject: 0, avg: 0 };
@@ -2228,30 +2229,45 @@ function aggregate(tiles) {
   return stats;
 }
 var MAX_ROWS = 30;
-function markdownReport(stats, tiles) {
+function markdownReport(stats, tiles, { skipped = 0 } = {}) {
   const shown = tiles.slice(0, MAX_ROWS);
   const rows = shown.map((t) => `| ${t.file} | ${t.overall ?? "\u2014"} | ${t.gate ?? "Review"} | ${t.size_class ?? "\u2014"} |`).join("\n");
   const more = tiles.length > MAX_ROWS ? `
 
 \u2026and ${tiles.length - MAX_ROWS} more \u2014 see the \`tilesmith-report\` artifact for the full list.
 ` : "";
+  const skippedLine = skipped > 0 ? `
+_${skipped} tile${skipped === 1 ? "" : "s"} could not be scored (network/API)._
+` : "";
+  const upgrade = stats.review + stats.reject > 0 ? " \xB7 Review or Reject results may require an upgrade." : "";
   return `${MARKER}
 ## TileSmith QC
 
-**${stats.total}** tiles scored \xB7 Average **${stats.avg}**
+| \u2705 Production | \u26A0\uFE0F Review | \u274C Reject | Average |
+| :---: | :---: | :---: | :---: |
+| **${stats.production}** | **${stats.review}** | **${stats.reject}** | **${stats.avg}** |
+
+**${stats.total}** tiles scored${skippedLine}
+
+[Open TileSmith settings](${DASHBOARD_URL}) \xB7 [Marketplace](https://github.com/marketplace/actions/tilesmith-qc)
+
+<details>
+<summary>Per-tile scores</summary>
 
 | File | Score | Gate | Size class |
 |---|---:|---|---|
 ${rows || "| No matching tiles | \u2014 | \u2014 | \u2014 |"}
 ${more}
+</details>
+
 ${DISCLAIMER}
 
-[Get your free API key](https://app.kleeblatt.space)${stats.review + stats.reject > 0 ? " \xB7 Review or Reject results may require an upgrade." : ""}`;
+[Get your free API key](${DASHBOARD_URL})${upgrade}`;
 }
-async function writeSummary(summaryPath, stats, tiles) {
+async function writeSummary(summaryPath, stats, tiles, extras = {}) {
   if (!summaryPath) return;
   const { appendFile } = await import("node:fs/promises");
-  await appendFile(summaryPath, `${markdownReport(stats, tiles)}
+  await appendFile(summaryPath, `${markdownReport(stats, tiles, extras)}
 `);
 }
 async function upsertComment({ token, repo, issueNumber, body, fetchImpl = fetch }) {
@@ -2364,7 +2380,7 @@ async function requestScore(buffer, apiKey, fetchImpl = fetch) {
       if ([401, 403].includes(response.status))
         throw Object.assign(new Error("Authentication failed. Check your API key and dashboard."), { code: 2 });
       if (response.status === 402)
-        throw Object.assign(new Error("TileSmith quota exhausted. Upgrade at https://app.kleeblatt.space."), {
+        throw Object.assign(new Error("TileSmith quota exhausted. Upgrade at https://tilesmith.kleeblatt.space."), {
           code: 2
         });
       if (response.status === 429) {
@@ -2439,7 +2455,7 @@ async function main() {
   const { failOn, maxFiles } = validate();
   const apiKey = input("api-key");
   if (!apiKey) {
-    command("notice", "No API key \u2013 skipping QC. Free key: https://app.kleeblatt.space");
+    command("notice", "No API key \u2013 skipping QC. Free key: https://tilesmith.kleeblatt.space");
     return;
   }
   const patterns = input("paths", "assets/**").split(",").map((p) => p.trim()).filter(Boolean);

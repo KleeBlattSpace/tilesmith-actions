@@ -32,6 +32,8 @@ test('markdown contains marker, table, disclaimer and upgrade hint', () => {
   assert.match(text, /\| File \| Score \| Gate \| Size class \|/);
   assert.match(text, /Images and personal data are never stored/);
   assert.match(text, /upgrade/i);
+  assert.match(text, /tilesmith\.kleeblatt\.space/);
+  assert.match(text, /✅ Production/);
 });
 
 test('scan matcher accepts configured glob prefixes and rejects unrelated paths', () => {
