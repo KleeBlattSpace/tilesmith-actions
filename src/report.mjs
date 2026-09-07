@@ -15,11 +15,19 @@ export function aggregate(tiles) {
   return stats;
 }
 
+/** Maximum table rows rendered in a PR comment / step summary before collapsing. */
+const MAX_ROWS = 30;
+
 export function markdownReport(stats, tiles) {
-  const rows = tiles
+  const shown = tiles.slice(0, MAX_ROWS);
+  const rows = shown
     .map((t) => `| ${t.file} | ${t.overall ?? '—'} | ${t.gate ?? 'Review'} | ${t.size_class ?? '—'} |`)
     .join('\n');
-  return `${MARKER}\n## TileSmith QC\n\n**${stats.total}** tiles scored · Average **${stats.avg}**\n\n| File | Score | Gate | Size class |\n|---|---:|---|---|\n${rows || '| No matching tiles | — | — | — |'}\n\n${DISCLAIMER}\n\n[Get your free API key](https://app.kleeblatt.space)${stats.review + stats.reject > 0 ? ' · Review or Reject results may require an upgrade.' : ''}`;
+  const more =
+    tiles.length > MAX_ROWS
+      ? `\n\n…and ${tiles.length - MAX_ROWS} more — see the \`tilesmith-report\` artifact for the full list.\n`
+      : '';
+  return `${MARKER}\n## TileSmith QC\n\n**${stats.total}** tiles scored · Average **${stats.avg}**\n\n| File | Score | Gate | Size class |\n|---|---:|---|---|\n${rows || '| No matching tiles | — | — | — |'}\n${more}\n${DISCLAIMER}\n\n[Get your free API key](https://app.kleeblatt.space)${stats.review + stats.reject > 0 ? ' · Review or Reject results may require an upgrade.' : ''}`;
 }
 
 export async function writeSummary(summaryPath, stats, tiles) {
@@ -36,10 +44,16 @@ export async function upsertComment({ token, repo, issueNumber, body, fetchImpl 
     'content-type': 'application/json',
   };
   const base = `https://api.github.com/repos/${repo}/issues/${issueNumber}/comments`;
-  const response = await fetchImpl(base, { headers });
-  if (!response.ok) throw new Error(`GitHub comments lookup failed (${response.status})`);
-  const comments = await response.json();
-  const existing = comments.find((comment) => String(comment.body ?? '').includes(MARKER));
+  // Paginate through existing comments (100 per page, cap at 10 pages) so the
+  // marker comment is found even on busy PRs instead of posting a duplicate.
+  let existing;
+  for (let page = 1; page <= 10 && !existing; page++) {
+    const response = await fetchImpl(`${base}?page=${page}&per_page=100`, { headers });
+    if (!response.ok) throw new Error(`GitHub comments lookup failed (${response.status})`);
+    const comments = await response.json();
+    if (!Array.isArray(comments) || comments.length === 0) break;
+    existing = comments.find((comment) => String(comment.body ?? '').includes(MARKER));
+  }
   const payload = JSON.stringify({ body });
   if (existing) {
     const update = await fetchImpl(`${base}/${existing.id}`, { method: 'PATCH', headers, body: payload });

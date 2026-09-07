@@ -1,0 +1,53 @@
+name: Release
+
+# Push a tag like v1.2.0 to:
+# 1. verify the committed dist/ matches src/
+# 2. sign dist/index.mjs with a GitHub build-provenance attestation
+# 3. create the GitHub release (notes generated from commits/CHANGELOG)
+# 4. move the major tag (v1) to this release
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+  id-token: write # required for attestations
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build
+
+      - name: dist must be committed and in sync
+        run: |
+          git add dist/
+          if ! git diff --cached --quiet; then
+            echo "::error::dist/ is out of sync with src/ — rebuild, commit, and re-tag."
+            exit 1
+          fi
+
+      - name: Sign build provenance for dist/index.mjs
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: dist/index.mjs
+
+      - name: Create GitHub release
+        run: gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --generate-notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Move major tag to this release
+        run: |
+          major="${GITHUB_REF_NAME%%.*}"
+          git tag --force "$major" "$GITHUB_REF_NAME"
+          git push --force origin "$major"

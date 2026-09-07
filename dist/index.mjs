@@ -2227,8 +2227,14 @@ function aggregate(tiles) {
   stats.avg = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length * 10) / 10 : 0;
   return stats;
 }
+var MAX_ROWS = 30;
 function markdownReport(stats, tiles) {
-  const rows = tiles.map((t) => `| ${t.file} | ${t.overall ?? "\u2014"} | ${t.gate ?? "Review"} | ${t.size_class ?? "\u2014"} |`).join("\n");
+  const shown = tiles.slice(0, MAX_ROWS);
+  const rows = shown.map((t) => `| ${t.file} | ${t.overall ?? "\u2014"} | ${t.gate ?? "Review"} | ${t.size_class ?? "\u2014"} |`).join("\n");
+  const more = tiles.length > MAX_ROWS ? `
+
+\u2026and ${tiles.length - MAX_ROWS} more \u2014 see the \`tilesmith-report\` artifact for the full list.
+` : "";
   return `${MARKER}
 ## TileSmith QC
 
@@ -2237,7 +2243,7 @@ function markdownReport(stats, tiles) {
 | File | Score | Gate | Size class |
 |---|---:|---|---|
 ${rows || "| No matching tiles | \u2014 | \u2014 | \u2014 |"}
-
+${more}
 ${DISCLAIMER}
 
 [Get your free API key](https://app.kleeblatt.space)${stats.review + stats.reject > 0 ? " \xB7 Review or Reject results may require an upgrade." : ""}`;
@@ -2256,10 +2262,14 @@ async function upsertComment({ token, repo, issueNumber, body, fetchImpl = fetch
     "content-type": "application/json"
   };
   const base = `https://api.github.com/repos/${repo}/issues/${issueNumber}/comments`;
-  const response = await fetchImpl(base, { headers });
-  if (!response.ok) throw new Error(`GitHub comments lookup failed (${response.status})`);
-  const comments = await response.json();
-  const existing = comments.find((comment) => String(comment.body ?? "").includes(MARKER));
+  let existing;
+  for (let page = 1; page <= 10 && !existing; page++) {
+    const response = await fetchImpl(`${base}?page=${page}&per_page=100`, { headers });
+    if (!response.ok) throw new Error(`GitHub comments lookup failed (${response.status})`);
+    const comments = await response.json();
+    if (!Array.isArray(comments) || comments.length === 0) break;
+    existing = comments.find((comment) => String(comment.body ?? "").includes(MARKER));
+  }
   const payload = JSON.stringify({ body });
   if (existing) {
     const update = await fetchImpl(`${base}/${existing.id}`, { method: "PATCH", headers, body: payload });
@@ -2274,6 +2284,7 @@ async function upsertComment({ token, repo, issueNumber, body, fetchImpl = fetch
 // src/main.mjs
 var API_URL = process.env.TILESMITH_API_URL || "https://api.kleeblatt.space/v1/score";
 var REPORTS_URL = process.env.TILESMITH_REPORTS_URL || API_URL.replace(/\/score\/?$/, "/reports");
+var ACTION_VERSION = "1.1.0";
 var root = process.env.GITHUB_WORKSPACE || process.cwd();
 var getEnvValue = (name) => {
   const normalized = process.env[`INPUT_${name.toUpperCase().replaceAll("-", "_")}`];
@@ -2303,14 +2314,40 @@ async function walk(dir, found = []) {
   }
   return found;
 }
+function globToRegex(pattern) {
+  const p = pattern.trim().replace(/^\.?\//, "");
+  if (!p) return /$^/;
+  if (!/[*?]/.test(p)) return new RegExp(`^${p.replace(/[.+^${}()|[\]\\]/g, "\\$&")}(?:/|$)`);
+  let re = "";
+  for (let i = 0; i < p.length; i++) {
+    const char = p[i];
+    if (char === "*") {
+      let j = i;
+      while (p[j] === "*") j++;
+      const double = j - i >= 2;
+      const prev = p[i - 1];
+      const next = p[j];
+      if (double && next === "/" && (prev === "/" || prev === void 0)) {
+        re += "(?:[^/]+/)*";
+        i = j;
+      } else if (double) {
+        re += ".*";
+        i = j - 1;
+      } else {
+        re += "[^/]*";
+        i = j - 1;
+      }
+    } else if (char === "?") {
+      re += "[^/]";
+    } else {
+      re += char.replace(/[.+^${}()|[\]\\]/g, "\\$&");
+    }
+  }
+  return new RegExp(`^${re}$`);
+}
 function matches(file, patterns) {
   const normalized = relative(root, file).split("\\").join("/");
-  return patterns.some((pattern) => {
-    const p = pattern.trim().replace(/^\.\//, "").replaceAll("**", "*");
-    if (!p) return false;
-    const escaped = p.replace(/[.+^${}()|[\]\\]/g, "\\$&").replaceAll("*", ".*");
-    return new RegExp(`^${escaped}$`).test(normalized) || new RegExp(`^${escaped}`).test(normalized);
-  });
+  return patterns.some((pattern) => globToRegex(pattern).test(normalized));
 }
 async function requestScore(buffer, apiKey, fetchImpl = fetch) {
   let retry429 = true;
@@ -2364,7 +2401,7 @@ async function requestScore(buffer, apiKey, fetchImpl = fetch) {
   }
   return null;
 }
-async function scoreOne(file, apiKey) {
+async function scoreOne(file, apiKey, usedNames) {
   const buffer = await readFile(file);
   const result = await requestScore(buffer, apiKey);
   if (!result) return null;
@@ -2375,8 +2412,14 @@ async function scoreOne(file, apiKey) {
     size_class: result.size_class ?? result.sizeClass ?? result.scored_at ?? `${result.width ?? "?"}x${result.height ?? "?"}`
   };
   const safe = tile.file.replace(/^\/+|\.\./g, "").replaceAll("/", "_").replace(/[^a-zA-Z0-9_.-]/g, "_");
+  const stem = safe.replace(/\.png$/i, "");
+  const ext = /\.png$/i.test(safe) ? ".png" : "";
+  let name = safe;
+  for (let n = 2; usedNames.has(name); n++) name = `${stem}-${n}${ext}`;
+  usedNames.add(name);
+  const overlayName = name.endsWith(".png") ? name : `${name}.png`;
   await mkdir(join(root, "tilesmith-report"), { recursive: true });
-  await writeFile(join(root, "tilesmith-report", `${safe}.png`), renderOverlay(buffer, tile));
+  await writeFile(join(root, "tilesmith-report", overlayName), renderOverlay(buffer, tile));
   return tile;
 }
 async function uploadReport(apiKey, payload) {
@@ -2399,19 +2442,28 @@ async function main() {
     command("notice", "No API key \u2013 skipping QC. Free key: https://app.kleeblatt.space");
     return;
   }
-  const patterns = input("paths", "assets/**").split(",");
+  const patterns = input("paths", "assets/**").split(",").map((p) => p.trim()).filter(Boolean);
   const files = (await walk(root)).filter((file) => matches(file, patterns)).slice(0, maxFiles);
+  if (files.length === 0)
+    command("warning", `No image tiles found for paths '${patterns.join(", ")}'. Check the 'paths' input.`);
+  else if (files.length === maxFiles)
+    command("notice", `Reached max-files limit (${maxFiles}); only the first ${maxFiles} tiles were scored.`);
+  const usedNames = /* @__PURE__ */ new Set();
   const tiles = [];
+  let skipped = 0;
   for (let i = 0; i < files.length; i += 4) {
-    const batch = await Promise.all(files.slice(i, i + 4).map((file) => scoreOne(file, apiKey)));
-    tiles.push(...batch.filter(Boolean));
+    const batch = await Promise.all(files.slice(i, i + 4).map((file) => scoreOne(file, apiKey, usedNames)));
+    for (const tile of batch) {
+      if (tile) tiles.push(tile);
+      else skipped += 1;
+    }
   }
   const stats = aggregate(tiles);
   const metadata = {
     repo: process.env.GITHUB_REPOSITORY || "",
     ref: process.env.GITHUB_REF || "",
     commit: process.env.GITHUB_SHA || "",
-    action_version: "1.0.0",
+    action_version: ACTION_VERSION,
     stats,
     tiles
   };
@@ -2437,6 +2489,7 @@ async function main() {
     production: stats.production,
     review: stats.review,
     reject: stats.reject,
+    skipped,
     avg: stats.avg,
     report: "tilesmith-report/report.json"
   }).map(([key, value]) => `${key}=${value}`).join("\n");
@@ -2455,6 +2508,7 @@ if (import.meta.url === `file://${process.argv[1]}`)
   });
 export {
   aggregate,
+  globToRegex,
   matches,
   requestScore
 };

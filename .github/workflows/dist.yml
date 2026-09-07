@@ -1,0 +1,66 @@
+name: dist
+
+# Keeps the committed dist/index.mjs in sync with src/:
+# - same-repo branches and main: rebuild and push the updated dist/ automatically
+# - fork PRs (cannot push): fail with instructions instead
+on:
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'action.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'action.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: dist-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  keep-in-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build
+
+      - name: Commit and push rebuilt dist (same-repo branches and main)
+        if: github.event_name == 'push' || github.event.pull_request.head.repo.fork == false
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add dist/
+          if git diff --cached --quiet; then
+            echo "dist/ is in sync"
+          else
+            git commit -m "build: rebuild dist from src"
+            git push
+          fi
+
+      - name: Verify dist is in sync (fork PRs cannot push)
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == true
+        run: |
+          if git diff --quiet dist/; then
+            echo "dist/ is in sync"
+          else
+            echo "::error::dist/index.mjs is out of sync with src/. Fork PRs cannot auto-commit; run 'npm run build' locally and add the updated dist/ to this PR."
+            exit 1
+          fi

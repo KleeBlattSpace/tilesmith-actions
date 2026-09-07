@@ -1,6 +1,6 @@
 {
   "name": "tilesmith-action",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "GitHub Action for TileSmith game-tile quality control",
   "type": "module",
   "license": "MIT",
