@@ -35,6 +35,16 @@ test('markdown contains marker, table, disclaimer and fair-use link', () => {
   assert.match(text, /tilesmith\.kleeblatt\.space/);
   assert.match(text, /Account & API Keys/);
   assert.match(text, /✅ Production/);
+  assert.match(text, /Tiles on Review\/Reject/);
+  assert.match(text, /About this check/);
+});
+
+test('green runs do not show the TileFix Doctor next-step line', () => {
+  const text = markdownReport({ total: 1, avg: 97, production: 1, review: 0, reject: 0 }, [
+    { file: 'ok.png', overall: 97, gate: 'Production', size_class: '64x64' },
+  ]);
+  assert.doesNotMatch(text, /Tiles on Review\/Reject/);
+  assert.match(text, /TileSet Creator/);
 });
 
 test('scan matcher accepts configured glob prefixes and rejects unrelated paths', () => {

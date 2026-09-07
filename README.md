@@ -20,6 +20,8 @@
 
 TileSmith QC scores your game tiles for **seams, borders, and visual artifacts** on every pull request, writes a machine-readable report plus per-tile overlay images, and leaves a tidy summary comment — so broken tiles never quietly reach your main branch.
 
+This action is the **free CI slice** of [TileSmith Studio](https://tilesmith.kleeblatt.space) (TileFix Doctor → TileSet Creator → Terrain Studio → TileMap Creator). QC lives here; fixing and assembling tiles happens in the studio when you want it — we do not upsell in the log.
+
 - **Zero setup for users**: no dependencies, no build step — just add 6 lines of YAML.
 - **Zero-retention**: images are scored in workflow memory and never stored.
 - **Zero-friction on forks**: pull requests without access to your secrets are handled gracefully and never fail.

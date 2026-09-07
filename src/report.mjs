@@ -34,6 +34,16 @@ export function markdownReport(stats, tiles, { skipped = 0 } = {}) {
       : '';
   const skippedLine =
     skipped > 0 ? `\n_${skipped} tile${skipped === 1 ? '' : 's'} could not be scored (network/API)._\n` : '';
+  const needsWork = stats.review + stats.reject > 0;
+  // Visible only when QC found something to fix — otherwise it is just noise.
+  const nextStep = needsWork
+    ? `\nTiles on Review/Reject: open [TileFix Doctor](${DASHBOARD_URL}) in TileSmith Studio (browser, local-first) to clean seams before the next push.\n`
+    : '';
+  const studio =
+    `<details>\n<summary>About this check</summary>\n\n` +
+    `TileSmith QC is the free CI slice of [TileSmith Studio](${DASHBOARD_URL}): ` +
+    `**TileFix Doctor** → **TileSet Creator** → **Terrain Studio** → **TileMap Creator**. ` +
+    `Scoring stays in this action; fixing and assembling tiles happens in the studio.\n\n</details>`;
   return `${MARKER}
 ## TileSmith QC
 
@@ -41,9 +51,8 @@ export function markdownReport(stats, tiles, { skipped = 0 } = {}) {
 | :---: | :---: | :---: | :---: |
 | **${stats.production}** | **${stats.review}** | **${stats.reject}** | **${stats.avg}** |
 
-**${stats.total}** tiles scored${skippedLine}
-
-[Account & API Keys](${DASHBOARD_URL}) — create, rotate, revoke keys · usage stats · billing (sign in) · [Marketplace](https://github.com/marketplace/actions/tilesmith-qc)
+**${stats.total}** tiles scored${skippedLine}${nextStep}
+[Account & API Keys](${DASHBOARD_URL}) · [Marketplace](https://github.com/marketplace/actions/tilesmith-qc)
 
 <details>
 <summary>Per-tile scores</summary>
@@ -54,9 +63,11 @@ ${rows || '| No matching tiles | — | — | — |'}
 ${more}
 </details>
 
+${studio}
+
 ${DISCLAIMER}
 
-[Create or rotate an API key](${DASHBOARD_URL}) · [Fair use](${FAIR_USE_URL})`;
+[Fair use](${FAIR_USE_URL})`;
 }
 
 export async function writeSummary(summaryPath, stats, tiles, extras = {}) {
