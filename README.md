@@ -128,6 +128,19 @@ There is **no published monthly call limit** on Free right now — hobby and sma
 - Rate limits (HTTP 429) and quota (HTTP 402) still apply; 402 exits `2` with a dashboard link.
 - A published monthly allowance may be added later. Do not build a product on “unlimited.”
 
+<details>
+<summary><strong>Going deeper — the scoring standard & what happens after Review/Reject</strong></summary>
+
+<br>
+
+**Is the scoring legit?** The gates and all six metrics are validated against public, reproducible fixtures in the [gc-pipeline-benchmark](https://github.com/KleeBlattSpace/gc-pipeline-benchmark) repo — 120 CC0 tiles, ground truth, `npm run benchmark` to check it yourself.
+
+**Got tiles in Review or Reject?** [Case Study 01 — Great Assets ≠ Ready Games](https://github.com/KleeBlattSpace/gc-pipeline-benchmark/blob/main/docs/CASE_STUDY_01.md) audits the 10 most-downloaded free tilemap packs on itch.io (240 tiles) and shows the full journey from raw scores to production-ready — including a tool-agnostic defect taxonomy and a 7-point shipping checklist.
+
+**The fix pass itself** (seam healing, artifact removal, variation) runs in [TileSmith Studio](https://tilesmith.kleeblatt.space) — local-first, no account needed to start. Fixed tiles re-score here in your PRs, so the loop closes in your own CI.
+
+</details>
+
 ## FAQ and troubleshooting
 
 <details>
