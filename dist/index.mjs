@@ -2215,7 +2215,8 @@ function renderOverlay(input2, score = {}) {
 // src/report.mjs
 var MARKER = "<!-- tilesmith-qc -->";
 var DASHBOARD_URL = "https://tilesmith.kleeblatt.space";
-var DISCLAIMER = "\u{1F340} This service is free. To keep it free, we collect anonymous scoring logs (scores, gate, size class, timestamp). Images and personal data are never stored.";
+var FAIR_USE_URL = "https://github.com/KleeBlattSpace/tilesmith-actions/blob/main/docs/fair-use.md";
+var DISCLAIMER = `\u{1F340} This service is free under [fair use](${FAIR_USE_URL}) (hobby CI; no published monthly cap yet). To keep it free, we collect anonymous scoring logs (scores, gate, size class, timestamp). Images and personal data are never stored.`;
 function aggregate(tiles) {
   const stats = { total: tiles.length, production: 0, review: 0, reject: 0, avg: 0 };
   for (const tile of tiles) {
@@ -2239,7 +2240,6 @@ function markdownReport(stats, tiles, { skipped = 0 } = {}) {
   const skippedLine = skipped > 0 ? `
 _${skipped} tile${skipped === 1 ? "" : "s"} could not be scored (network/API)._
 ` : "";
-  const upgrade = stats.review + stats.reject > 0 ? " \xB7 Review or Reject results may require an upgrade." : "";
   return `${MARKER}
 ## TileSmith QC
 
@@ -2262,7 +2262,7 @@ ${more}
 
 ${DISCLAIMER}
 
-[Create or rotate an API key](${DASHBOARD_URL})${upgrade}`;
+[Create or rotate an API key](${DASHBOARD_URL}) \xB7 [Fair use](${FAIR_USE_URL})`;
 }
 async function writeSummary(summaryPath, stats, tiles, extras = {}) {
   if (!summaryPath) return;

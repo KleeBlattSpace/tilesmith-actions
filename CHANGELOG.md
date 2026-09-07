@@ -8,6 +8,7 @@ All notable changes to this project are documented here.
 
 - Job summary and PR comment now lead with a Production / Review / Reject board and an **Account & API Keys** link to [tilesmith.kleeblatt.space](https://tilesmith.kleeblatt.space) (create / rotate / revoke, usage, Stripe billing — sign-in required).
 - Docs and `action.yml` now describe keys as `tsmith_live_…` (secret shown only once).
+- [Fair use policy](docs/fair-use.md): no published monthly cap; hobby CI is intended; abuse / resale is not. Linked from the job summary and README.
 - Folded `::group::TileSmith QC overview` in the Actions log (counts + dashboard URL).
 
 ### Fixes

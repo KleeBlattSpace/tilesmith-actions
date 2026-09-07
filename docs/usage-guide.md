@@ -2,7 +2,7 @@
 
 Everything you need to go from zero to automated tile quality checks on every pull request.
 
-**Contents:** [Requirements](#requirements) · [Setup](#setup) · [Choosing `paths`](#choosing-paths) · [Workflow recipes](#workflow-recipes) · [Reading the results](#reading-the-results) · [`report.json` reference](#reportjson-reference) · [Controlling cost & quota](#controlling-cost--quota) · [Troubleshooting](#troubleshooting) · [FAQ](#faq)
+**Contents:** [Requirements](#requirements) · [Setup](#setup) · [Choosing `paths`](#choosing-paths) · [Workflow recipes](#workflow-recipes) · [Reading the results](#reading-the-results) · [`report.json` reference](#reportjson-reference) · [Controlling cost & quota](#controlling-cost--quota) · [Troubleshooting](#troubleshooting) · [FAQ](#faq) · [Fair use](fair-use.md)
 
 ---
 
@@ -158,7 +158,7 @@ No image data, no hashes — just paths, scores, and metadata.
 
 ## Controlling cost & quota
 
-- **Free tier** — covers hobby and small studio use; see the [dashboard](https://tilesmith.kleeblatt.space) for your plan's limits.
+- **Free / fair use** — no published monthly cap today; hobby CI is intended, farms are not. Full text: [fair use](fair-use.md). Live usage: [Account & API Keys](https://tilesmith.kleeblatt.space).
 - **`max-files`** caps tiles per run (1–500, default 100). Use narrower `paths` to spend quota on the tiles that matter.
 - When the quota is exhausted, the action exits `2` with a dashboard link — it never fails silently, and it never marks good tiles as bad.
 

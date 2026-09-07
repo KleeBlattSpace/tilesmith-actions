@@ -2,13 +2,13 @@
 
 Thanks for using TileSmith QC! Here is the fastest way to get help:
 
-| Situation                                         | Where to go                                                                                                           |
-| ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| 🐛 Bug or unexpected behavior in this action      | [Open a GitHub issue](https://github.com/KleeBlattSpace/tilesmith-actions/issues/new?template=bug_report.yml)         |
-| 💡 Feature idea or improvement                    | [Open a feature request](https://github.com/KleeBlattSpace/tilesmith-actions/issues/new?template=feature_request.yml) |
-| ❓ Questions, usage help, show & tell             | [GitHub Discussions](https://github.com/KleeBlattSpace/tilesmith-actions/discussions)                                 |
-| 🔑 API key, quota, or billing (TileSmith account) | [TileSmith dashboard](https://tilesmith.kleeblatt.space) or email [admin@kleeblatt.space](mailto:admin@kleeblatt.space)     |
-| 🔒 Security vulnerability                         | Follow [SECURITY.md](SECURITY.md) — do **not** open a public issue                                                    |
+| Situation                                         | Where to go                                                                                                                                     |
+| ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| 🐛 Bug or unexpected behavior in this action      | [Open a GitHub issue](https://github.com/KleeBlattSpace/tilesmith-actions/issues/new?template=bug_report.yml)                                   |
+| 💡 Feature idea or improvement                    | [Open a feature request](https://github.com/KleeBlattSpace/tilesmith-actions/issues/new?template=feature_request.yml)                           |
+| ❓ Questions, usage help, show & tell             | [GitHub Discussions](https://github.com/KleeBlattSpace/tilesmith-actions/discussions)                                                           |
+| 🔑 API key, quota, or billing (TileSmith account) | [TileSmith dashboard](https://tilesmith.kleeblatt.space) · [fair use](docs/fair-use.md) · [admin@kleeblatt.space](mailto:admin@kleeblatt.space) |
+| 🔒 Security vulnerability                         | Follow [SECURITY.md](SECURITY.md) — do **not** open a public issue                                                                              |
 
 ## Before you open an issue
 

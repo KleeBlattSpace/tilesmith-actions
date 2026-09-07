@@ -24,14 +24,14 @@ test('aggregate counts gates and computes average', () => {
   );
 });
 
-test('markdown contains marker, table, disclaimer and upgrade hint', () => {
+test('markdown contains marker, table, disclaimer and fair-use link', () => {
   const text = markdownReport({ total: 1, avg: 50, production: 0, review: 0, reject: 1 }, [
     { file: 'a.png', overall: 50, gate: 'Reject', size_class: '64x64' },
   ]);
   assert.match(text, new RegExp(MARKER.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   assert.match(text, /\| File \| Score \| Gate \| Size class \|/);
   assert.match(text, /Images and personal data are never stored/);
-  assert.match(text, /upgrade/i);
+  assert.match(text, /fair use/i);
   assert.match(text, /tilesmith\.kleeblatt\.space/);
   assert.match(text, /Account & API Keys/);
   assert.match(text, /✅ Production/);
