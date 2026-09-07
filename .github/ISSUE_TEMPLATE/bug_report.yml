@@ -1,0 +1,61 @@
+name: 🐛 Bug report
+description: Something in the TileSmith QC action does not behave as documented
+labels: ['bug']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug! Please fill in the sections below.
+        ⚠️ Never paste your API key or any secret — we don't need it to help you.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A clear description of the bug. What did you expect instead?
+      placeholder: The action skipped all tiles even though assets/ contains PNGs…
+    validations:
+      required: true
+  - type: textarea
+    id: workflow
+    attributes:
+      label: Workflow excerpt
+      description: The step(s) using `KleeBlattSpace/tilesmith-actions` — replace secrets with `***`.
+      render: yaml
+      placeholder: |
+        - uses: KleeBlattSpace/tilesmith-actions@v1
+          with:
+            api-key: ${{ secrets.TILESMITH_API_KEY }}
+            paths: 'assets/**'
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Which part is affected?
+      options: Tile discovery / paths matching
+        Scoring / API behavior
+        PR comment or step summary
+        Overlays or report artifact
+        Fail-on behavior / exit codes
+        Other
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Action version
+      description: 'Which version are you using? (e.g. `v1`, `v1.1.0`, a commit SHA, or a branch)'
+      placeholder: v1
+    validations:
+      required: true
+  - type: input
+    id: run
+    attributes:
+      label: Link to a failing run (if public)
+      placeholder: https://github.com/you/your-repo/actions/runs/…
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: Warnings or errors from the action step. No secrets, please.
+      render: shell

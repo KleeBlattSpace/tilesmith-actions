@@ -11,7 +11,8 @@ Last updated: 2026-09-07 (v1.1.0).
 - **Quality gates**: `fail-on: Reject|Review|never` with exit codes 0/1/2.
 - **Tests**: 13 unit/contract tests (`npm test`) + end-to-end smoke test of the committed bundle against a mock API (`node test/smoke.mjs`) covering keyless, keyed, glob scoping, overlay-collision handling, outputs, and fail-on.
 - **CI**: `selftest.yml` (test/build/lint/format + dogfooding the action on CC0 fixtures, keyless or keyed via `TILESMITH_STAGING_KEY`), `dist.yml` (auto-rebuild + push of committed `dist/`, fork-safe), `release.yml` (tag `v*` ⇒ sync check ⇒ attestation ⇒ GitHub release ⇒ move major tag).
-- **Docs**: README (quickstart incl. artifact upload, inputs/outputs, example PR comment, honest privacy section, FAQ), SECURITY.md, CHANGELOG, MIT license, CC0 fixture provenance.
+- **Docs**: README with banner, badges, real overlay examples, quickstart incl. artifact upload, inputs/outputs, example PR comment, honest privacy section, support section, collapsible FAQ; SUPPORT.md, CONTRIBUTING.md, CODE_OF_CONDUCT.md, SECURITY.md (with contact email), CHANGELOG, MIT license, CC0 fixture provenance; issue templates (bug/feature forms + contact links) and PR template.
+- **Marketplace-ready branding**: `action.yml` name/description/icon (`grid`, green) tuned for the GitHub Marketplace listing; marketplace badge/link in README.
 
 ## 🔜 Before announcing (blocking)
 
@@ -20,7 +21,12 @@ Last updated: 2026-09-07 (v1.1.0).
 3. **Configure repo secrets** `TILESMITH_STAGING_KEY` (+ optional `TILESMITH_STAGING_URL`) so the keyed dogfood assertions (base-01 → 97/Production, brick → 95/64x64, ±1) actually run in CI.
 4. **Verify the API contract live**: `POST /v1/score` and `POST /v1/reports` (the reports endpoint feeds the planned badge; upload failures must stay warning-only).
 5. **Dogfood externally**: run the action in the `gc-pipeline-benchmark` repo; capture a real PR-comment screenshot for the README.
-6. **GitHub Marketplace**: add topic `github-actions` so the action is listed/discoverable.
+6. **Repo admin one-clickers** (need owner permissions, not doable from CI):
+   - Repo **Description** + **Website**: `TileSmith QC — free GitHub Action for game tile quality control` / `https://app.kleeblatt.space` (Settings → General).
+   - **Topics**: `github-actions`, `gamedev`, `game-development`, `pixel-art`, `tilemap`, `continuous-integration`, `code-quality`, `game-assets` (the `github-actions` topic triggers Marketplace listing).
+   - **Enable Discussions** (Settings → General → Features) — SUPPORT.md and issue templates already link to them.
+   - **Upload a social preview image** (Settings → General → Social preview): use `docs/images/banner.png`.
+   - Check the **Community Standards** tab — should be 100% after this PR.
 
 ## 💡 Later (phase 2 ideas)
 

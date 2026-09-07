@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: ❓ Questions & usage help
+    url: https://github.com/KleeBlattSpace/tilesmith-actions/discussions
+    about: Ask questions and share how you use TileSmith QC — GitHub Discussions.
+  - name: 🔑 API key, quota & billing
+    url: https://app.kleeblatt.space
+    about: Issues with your TileSmith account or the scoring API are handled in the dashboard.
+  - name: 📄 TileSmith QC documentation
+    url: https://github.com/KleeBlattSpace/tilesmith-actions#readme
+    about: Inputs, outputs, FAQ, and troubleshooting.

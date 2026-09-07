@@ -5,7 +5,7 @@ description: >
   report, and comments on pull requests. Zero-retention: images are scored in
   RAM and never stored.
 branding:
-  icon: check-square
+  icon: grid
   color: green
 inputs:
   api-key:

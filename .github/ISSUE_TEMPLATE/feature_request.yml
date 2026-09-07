@@ -1,0 +1,41 @@
+name: 💡 Feature request
+description: Suggest an improvement for TileSmith QC
+labels: ['enhancement']
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+      description: Describe the outcome you need — the 'why' helps us find the right solution.
+      placeholder: I want unchanged tiles to not consume my API quota on every push…
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: What solution do you have in mind?
+      description: A concrete description of the behavior or input/output you'd like.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Which area?
+      options: Tile discovery / paths matching
+        Scoring / API behavior
+        PR comment or step summary
+        Overlays or report artifact
+        Fail-on behavior / exit codes
+        New output format (SARIF, badge, contact sheet…)
+        Other
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I checked the ROADMAP.md — this is not already planned there.
+          required: true
+        - label: I searched existing issues and found no duplicate.
+          required: true
